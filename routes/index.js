@@ -4,7 +4,8 @@ const router = express.Router()
 
 // Get login page
 router.get('/', (req, res) => {
-  res.render('index')
+  if(req.session.loggedIn) return res.redirect('/welcome')
+  res.render('login')
 })
 
 // login method
@@ -18,8 +19,22 @@ router.post('/', (req, res) => {
     res.redirect('/')
   } else {
     req.flash('success_messages', '成功登入！')
-    res.render('welcome', { name: user.firstName })
+    req.session.loggedIn = true
+    req.session.username = user.firstName
+    res.redirect('/welcome')
   }
 })
+
+router.get('/welcome', (req, res) => {
+  if(req.session.loggedIn) return res.render('welcome', { name: req.session.username })
+  res.redirect('/')
+})
+
+router.get('/logout', (req, res) => {
+  req.session.destroy()
+  res.redirect('/')
+})
+
+
 
 module.exports = router
